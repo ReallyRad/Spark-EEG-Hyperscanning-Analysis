@@ -1,16 +1,40 @@
-# This is a sample Python script.
+import mne
+import os
+import numpy as np
+import matplotlib.pyplot as plt
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+mne.set_log_level("WARNING")
+raw = mne.io.read_raw_edf("syncbox.edf", preload=True)
+raw.rename_channels(lambda s: s.strip("."))
+#raw.set_montage("standard_1020", match_case=False)
+raw.set_eeg_reference("average")
 
+n_time_samps = raw.n_times
+time_secs = raw.times
+ch_names = raw.ch_names
+n_chan = len(ch_names)  # note: there is no raw.n_channels attribute
+print('the (cropped) sample data object has {} time samples and {} channels.'
+      ''.format(n_time_samps, n_chan))
+print('The last time sample is at {} seconds.'.format(time_secs[-1]))
+print('The first few channel names are {}.'.format(', '.join(ch_names[:3])))
+print()  # insert a blank line in the output
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
+# some examples of raw.info:
+print('bad channels:', raw.info['bads'])  # chs marked "bad" during acquisition
+print(raw.info['sfreq'], 'Hz')            # sampling frequency
+print(raw.info['description'], '\n')      # miscellaneous acquisition info
 
+print(raw.info)
 
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
+sampling_freq = raw.info['sfreq']
+start_end_secs = np.array([10, 13])
+start_sample, stop_sample = (start_end_secs * sampling_freq).astype(int)
 
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+channel_names = ['Fp1', 'Audio']
+two_meg_chans = raw[channel_names, start_sample:stop_sample]
+y_offset = np.array([5e-11, 0])  # just enough to separate the channel traces
+x = two_meg_chans[1]
+y = two_meg_chans[0].T + y_offset
+lines = plt.plot(x, y)
+plt.legend(lines, channel_names)
+plt.show()
