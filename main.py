@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 mne.set_log_level("WARNING")
-raw = mne.io.read_raw_edf("syncbox.edf", preload=True)
+raw = mne.io.read_raw_edf("PC2.edf", preload=True)
 raw.rename_channels(lambda s: s.strip("."))
 #raw.set_montage("standard_1020", match_case=False)
 raw.set_eeg_reference("average")
@@ -27,7 +27,7 @@ print(raw.info['description'], '\n')      # miscellaneous acquisition info
 print(raw.info)
 
 sampling_freq = raw.info['sfreq']
-start_end_secs = np.array([10, 13])
+start_end_secs = np.array([0, 43])
 start_sample, stop_sample = (start_end_secs * sampling_freq).astype(int)
 
 channel_names = ['Fp1', 'Audio']
